@@ -1,0 +1,7 @@
+[package]
+name = "diesel_course"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+diesel_migrations = "2.2.0"
