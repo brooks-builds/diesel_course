@@ -1,7 +1,7 @@
 use chrono::Utc;
 use diesel_course::{
     connect_to_db,
-    queries::pets_queries::{get_all_pets, update_pet_last_feed},
+    queries::pets_queries::{get_all_pets, update_pet_last_fed},
 };
 use std::{env, io::stdin};
 
@@ -28,7 +28,7 @@ fn main() {
 
     let now = Utc::now().naive_utc();
 
-    update_pet_last_feed(db, now, pet_id).expect("Error updating last time pet was fed");
+    update_pet_last_fed(db, now, pet_id).expect("Error updating last time pet was fed");
 
     println!("Pet has been fed");
 }

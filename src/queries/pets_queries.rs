@@ -36,7 +36,7 @@ pub fn create_pet(db: &mut PgConnection, name: &str, species_id: i32) -> Result<
         .context("inserting new pet")
 }
 
-pub fn update_pet_last_feed(
+pub fn update_pet_last_fed(
     db: &mut PgConnection,
     last_fed: NaiveDateTime,
     pet_id: i32,
