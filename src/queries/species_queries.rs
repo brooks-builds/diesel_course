@@ -1,3 +1,4 @@
+use crate::models::CreateSpecies;
 use crate::{models::Species, schema::species};
 use diesel::prelude::*;
 use diesel::{PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
@@ -20,4 +21,16 @@ pub fn get_species_by_id(db: &mut PgConnection, id: i32) -> Result<Option<Specie
         .first(db)
         .optional()
         .context("Loading species by id")
+}
+
+pub fn create_species(db: &mut PgConnection, name: &str) -> Result<i32> {
+    let species = CreateSpecies {
+        name: name.to_owned(),
+    };
+
+    species
+        .insert_into(species::table)
+        .returning(species::dsl::id)
+        .get_result(db)
+        .context("Inserting species into the database")
 }
