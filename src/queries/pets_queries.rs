@@ -1,5 +1,6 @@
 use crate::models::CreatePet;
 use crate::{models::Pet, schema::pets};
+use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use diesel::{debug_query, pg::Pg, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
 use eyre::{Context, Result};
@@ -33,4 +34,26 @@ pub fn create_pet(db: &mut PgConnection, name: &str, species_id: i32) -> Result<
         // .returning(pets::dsl::id)
         .get_result(db)
         .context("inserting new pet")
+}
+
+pub fn update_pet_last_feed(
+    db: &mut PgConnection,
+    last_fed: NaiveDateTime,
+    pet_id: i32,
+) -> Result<()> {
+    diesel::update(pets::table.filter(pets::dsl::id.eq(pet_id)))
+        .set(pets::dsl::last_fed.eq(Some(last_fed)))
+        .execute(db)
+        .context("updating last fed for pet")?;
+
+    Ok(())
+}
+
+pub fn update_pet_name(db: &mut PgConnection, name: &str, id: i32) -> Result<()> {
+    diesel::update(pets::table.filter(pets::dsl::id.eq(id)))
+        .set(pets::dsl::name.eq(name))
+        .execute(db)
+        .context("updating pet name")?;
+
+    Ok(())
 }

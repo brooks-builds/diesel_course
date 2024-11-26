@@ -34,3 +34,12 @@ pub fn create_species(db: &mut PgConnection, name: &str) -> Result<i32> {
         .get_result(db)
         .context("Inserting species into the database")
 }
+
+pub fn update_species_name(db: &mut PgConnection, name: &str, id: i32) -> Result<()> {
+    diesel::update(species::table.filter(species::dsl::id.eq(id)))
+        .set(species::dsl::name.eq(name))
+        .execute(db)
+        .context("updating species name")?;
+
+    Ok(())
+}
