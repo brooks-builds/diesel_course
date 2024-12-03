@@ -22,6 +22,7 @@ pub struct CreatePet {
 pub struct Species {
     pub id: i32,
     pub name: String,
+    pub deleted_at: Option<NaiveDateTime>,
 }
 
 #[derive(Debug, Identifiable, Queryable, Selectable, Associations)]
@@ -32,4 +33,5 @@ pub struct Pet {
     pub name: String,
     pub species_id: i32,
     pub last_fed: Option<NaiveDateTime>,
+    pub deleted_at: Option<NaiveDateTime>,
 }

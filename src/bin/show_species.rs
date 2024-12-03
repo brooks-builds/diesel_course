@@ -9,7 +9,7 @@ fn main() {
     let db = &mut connect_to_db(&database_url).unwrap();
     let species = get_all_species(db).unwrap();
 
-    for Species { id, name } in species {
+    for Species { id, name, .. } in species {
         println!("{id} - {name}");
     }
 }

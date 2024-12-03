@@ -1,0 +1,1 @@
+ALTER TABLE species ADD COLUMN deleted_at TIMESTAMPTZ;

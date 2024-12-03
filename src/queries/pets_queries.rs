@@ -1,14 +1,15 @@
 use crate::models::CreatePet;
 use crate::{models::Pet, schema::pets};
-use chrono::NaiveDateTime;
-use diesel::prelude::*;
-use diesel::{debug_query, pg::Pg, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
+use chrono::{NaiveDateTime, Utc};
+use diesel::pg::Pg;
+use diesel::{debug_query, prelude::*};
 use eyre::{Context, Result};
 
 pub fn get_all_pets(db: &mut PgConnection) -> Result<Vec<Pet>> {
-    use crate::schema::pets::dsl::pets;
+    use crate::schema::pets::dsl::{deleted_at, pets};
 
     pets.select(Pet::as_select())
+        .filter(deleted_at.is_null())
         .load(db)
         .context("Getting all pets")
 }
@@ -54,6 +55,36 @@ pub fn update_pet_name(db: &mut PgConnection, name: &str, id: i32) -> Result<()>
         .set(pets::dsl::name.eq(name))
         .execute(db)
         .context("updating pet name")?;
+
+    Ok(())
+}
+
+pub fn hard_delete_pet(db: &mut PgConnection, id: i32) -> Result<()> {
+    diesel::delete(pets::table.filter(pets::dsl::id.eq(id)))
+        .execute(db)
+        .context("hard deleting pet")?;
+
+    Ok(())
+}
+
+pub fn soft_delete_pet(db: &mut PgConnection, id: i32) -> Result<()> {
+    let now = Utc::now().naive_utc();
+
+    diesel::update(pets::table.filter(pets::dsl::id.eq(id)))
+        .set(pets::dsl::deleted_at.eq(now))
+        .execute(db)
+        .context("soft deleting pet")?;
+
+    Ok(())
+}
+
+pub fn soft_delete_pets_by_species(db: &mut PgConnection, id: i32) -> Result<()> {
+    let now = Utc::now().naive_utc();
+
+    diesel::update(pets::table.filter(pets::dsl::species_id.eq(id)))
+        .set(pets::dsl::deleted_at.eq(now))
+        .execute(db)
+        .context("soft deleting all pets with given species id")?;
 
     Ok(())
 }

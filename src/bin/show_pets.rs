@@ -13,6 +13,7 @@ fn main() {
         name,
         species_id,
         last_fed,
+        ..
     } in all_pets
     {
         println!("{id} - {name} ({species_id}): last fed: {last_fed:?}");
