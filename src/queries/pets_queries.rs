@@ -1,6 +1,7 @@
 use crate::models::CreatePet;
 use crate::{models::Pet, schema::pets};
 use chrono::{NaiveDateTime, Utc};
+use diesel::associations::HasTable;
 use diesel::pg::Pg;
 use diesel::{debug_query, prelude::*};
 use eyre::{Context, Result};
@@ -35,6 +36,13 @@ pub fn create_pet(db: &mut PgConnection, name: &str, species_id: i32) -> Result<
         // .returning(pets::dsl::id)
         .get_result(db)
         .context("inserting new pet")
+}
+
+pub fn batch_create_pets(db: &mut PgConnection, pets: &[CreatePet]) -> Result<Vec<Pet>> {
+    diesel::insert_into(Pet::table())
+        .values(pets)
+        .get_results(db)
+        .context("batch inserting pets")
 }
 
 pub fn update_pet_last_fed(

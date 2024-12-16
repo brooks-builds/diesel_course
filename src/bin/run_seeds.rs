@@ -1,7 +1,7 @@
-use diesel::{Connection, Insertable, PgConnection, RunQueryDsl};
+use diesel::{Connection, PgConnection};
 use diesel_course::models::{CreatePet, CreateSpecies};
-use diesel_course::schema::pets as pets_schema;
-use diesel_course::schema::species as species_schema;
+use diesel_course::queries::pets_queries::batch_create_pets;
+use diesel_course::queries::species_queries::batch_create_species;
 
 const SPECIES_TO_CREATE: [&str; 3] = ["cat", "squirrel", "dog"];
 const PETS_TO_CREATE: [(&str, usize); 4] =
@@ -15,28 +15,23 @@ fn main() {
     let db_connection = &mut PgConnection::establish(&database_url)
         .expect("Error connecting to the postgres database");
 
-    let created_species = SPECIES_TO_CREATE
+    let species = SPECIES_TO_CREATE
         .iter()
-        .map(|species_name| {
-            let species = CreateSpecies {
-                name: species_name.to_string(),
-            };
-            species
-                .insert_into(species_schema::table)
-                .returning(species_schema::id)
-                .get_result(db_connection)
-                .unwrap()
+        .map(|species_name| CreateSpecies {
+            name: species_name.to_string(),
         })
-        .collect::<Vec<i32>>();
+        .collect::<Vec<CreateSpecies>>();
 
-    PETS_TO_CREATE.iter().for_each(|(pet_name, species_index)| {
-        let pet = CreatePet {
+    let created_species =
+        batch_create_species(db_connection, &species).expect("Inserting species for seeds");
+
+    let pets = PETS_TO_CREATE
+        .iter()
+        .map(|(pet_name, species_index)| CreatePet {
             name: pet_name.to_string(),
-            species_id: created_species[*species_index],
-        };
+            species_id: created_species[*species_index].id,
+        })
+        .collect::<Vec<CreatePet>>();
 
-        pet.insert_into(pets_schema::table)
-            .execute(db_connection)
-            .unwrap();
-    });
+    batch_create_pets(db_connection, &pets).expect("Error seeding pets");
 }

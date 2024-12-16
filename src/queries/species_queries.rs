@@ -1,6 +1,7 @@
 use crate::models::CreateSpecies;
 use crate::{models::Species, schema::species};
 use chrono::Utc;
+use diesel::associations::HasTable;
 use diesel::prelude::*;
 use diesel::{PgConnection, QueryDsl, RunQueryDsl, SelectableHelper};
 use eyre::{Context, Result};
@@ -35,6 +36,16 @@ pub fn create_species(db: &mut PgConnection, name: &str) -> Result<i32> {
         .returning(species::dsl::id)
         .get_result(db)
         .context("Inserting species into the database")
+}
+
+pub fn batch_create_species(
+    db: &mut PgConnection,
+    species_to_create: &[CreateSpecies],
+) -> Result<Vec<Species>> {
+    diesel::insert_into(Species::table())
+        .values(species_to_create)
+        .get_results(db)
+        .context("batch inserting species")
 }
 
 pub fn update_species_name(db: &mut PgConnection, name: &str, id: i32) -> Result<()> {
