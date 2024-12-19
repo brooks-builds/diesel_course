@@ -1,4 +1,4 @@
-use crate::models::CreatePet;
+use crate::models::{CreatePet, Species};
 use crate::{models::Pet, schema::pets};
 use chrono::{NaiveDateTime, Utc};
 use diesel::associations::HasTable;
@@ -6,13 +6,20 @@ use diesel::pg::Pg;
 use diesel::{debug_query, prelude::*};
 use eyre::{Context, Result};
 
-pub fn get_all_pets(db: &mut PgConnection) -> Result<Vec<Pet>> {
+pub fn get_all_pets(db: &mut PgConnection) -> Result<Vec<(Pet, Species)>> {
     use crate::schema::pets::dsl::{deleted_at, pets};
 
-    pets.select(Pet::as_select())
+    // pets.select(Pet::as_select())
+    //     .filter(deleted_at.is_null())
+    //     .load(db)
+    //     .context("Getting all pets")
+
+    pets::table()
+        .inner_join(Species::table())
+        .select((Pet::as_select(), Species::as_select()))
         .filter(deleted_at.is_null())
         .load(db)
-        .context("Getting all pets")
+        .context("Getting all pets with their species")
 }
 
 pub fn get_pet_by_id(db: &mut PgConnection, id: i32) -> Result<Option<Pet>> {
@@ -43,6 +50,15 @@ pub fn batch_create_pets(db: &mut PgConnection, pets: &[CreatePet]) -> Result<Ve
         .values(pets)
         .get_results(db)
         .context("batch inserting pets")
+}
+
+pub fn transaction_create_pet(
+    db: &mut PgConnection,
+    name: &str,
+    species_id: i32,
+) -> Result<(i32, String)> {
+    db.transaction(|connection| create_pet(connection, name, species_id))
+        .context("Creating pet in manual transaction")
 }
 
 pub fn update_pet_last_fed(

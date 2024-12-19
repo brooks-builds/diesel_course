@@ -13,7 +13,7 @@ fn main() {
     let db = &mut connect_to_db(&database_url).expect("Error connecting to database");
 
     println!("which pet would you like to feed?");
-    for pet in get_all_pets(db).expect("Error getting all pets") {
+    for (pet, _species) in get_all_pets(db).expect("Error getting all pets") {
         println!("{} - {}", pet.id, pet.name);
     }
 

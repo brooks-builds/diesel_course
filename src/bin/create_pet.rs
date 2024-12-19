@@ -2,7 +2,7 @@ use std::{env, io::stdin};
 
 use diesel_course::{
     connect_to_db,
-    queries::{pets_queries::create_pet, species_queries::get_all_species},
+    queries::{pets_queries::transaction_create_pet, species_queries::get_all_species},
 };
 
 fn main() {
@@ -37,7 +37,7 @@ fn main() {
     };
 
     let created_pet_id =
-        create_pet(db, &new_pet_name, new_species_id).expect("Error creating new pet");
+        transaction_create_pet(db, &new_pet_name, new_species_id).expect("Error creating new pet");
 
     println!(
         "Pet {new_pet_name} has been created with an id of {:?}",

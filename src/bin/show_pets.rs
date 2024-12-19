@@ -1,4 +1,8 @@
-use diesel_course::{connect_to_db, models::Pet, queries::pets_queries::get_all_pets};
+use diesel_course::{
+    connect_to_db,
+    models::{Pet, Species},
+    queries::pets_queries::get_all_pets,
+};
 
 fn main() {
     dotenvy::dotenv().ok();
@@ -8,14 +12,15 @@ fn main() {
     let db = &mut connect_to_db(&database_url).unwrap();
     let all_pets = get_all_pets(db).unwrap();
 
-    for Pet {
-        id,
-        name,
-        species_id,
-        last_fed,
-        ..
-    } in all_pets
+    for (
+        Pet {
+            id, name, last_fed, ..
+        },
+        Species {
+            name: species_name, ..
+        },
+    ) in all_pets
     {
-        println!("{id} - {name} ({species_id}): last fed: {last_fed:?}");
+        println!("{id} - {name} ({species_name}): last fed: {last_fed:?}");
     }
 }

@@ -12,7 +12,7 @@ fn main() {
         std::env::var("DATABASE_URL").expect("DATABASE_URL environment variable not found");
     let db = &mut connect_to_db(&database_url).expect("Error connecting to database");
 
-    for pet in get_all_pets(db).expect("Error getting all pets") {
+    for (pet, _species) in get_all_pets(db).expect("Error getting all pets") {
         println!("{} - {}", pet.name, pet.id);
     }
     println!("What pet id should be deleted");
